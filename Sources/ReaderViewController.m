@@ -224,6 +224,12 @@
 		[mainToolbar setBookmarkState:[document.bookmarks containsIndex:page]];
 
 		[mainPagebar updatePagebar]; // Update page bar
+        
+		// call a delegate method when you change page
+		if( self.delegate && [self.delegate respondsToSelector:@selector(readerViewController:didChangePage:)] )
+		{
+			[self.delegate readerViewController:self didChangePage:currentPage];
+		}
 	}
 }
 
@@ -252,6 +258,12 @@
 		[mainToolbar setBookmarkState:[document.bookmarks containsIndex:page]];
 
 		[mainPagebar updatePagebar]; // Update page bar
+        
+		// call a delegate method when you change page
+		if( self.delegate && [self.delegate respondsToSelector:@selector(readerViewController:didChangePage:)] )
+		{
+			[self.delegate readerViewController:self didChangePage:currentPage];
+		}
 	}
 }
 
@@ -282,6 +294,11 @@
 	{
 		NSAssert(NO, @"Delegate must respond to -dismissReaderViewController:");
 	}
+}
+
+- (ReaderDocument *)getDocument
+{
+    return document;
 }
 
 #pragma mark - UIViewController methods
@@ -353,17 +370,27 @@
 	theScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
 	theScrollView.backgroundColor = [UIColor clearColor]; theScrollView.delegate = self;
 	[self.view addSubview:theScrollView];
+	if( self.removeNavigation )
+	{
+		theScrollView.scrollEnabled = NO;
+	}
 
-	CGRect toolbarRect = viewRect; toolbarRect.size.height = TOOLBAR_HEIGHT;
-	mainToolbar = [[ReaderMainToolbar alloc] initWithFrame:toolbarRect document:document]; // ReaderMainToolbar
-	mainToolbar.delegate = self; // ReaderMainToolbarDelegate
-	[self.view addSubview:mainToolbar];
+	if( !self.removeNavigation )
+	{
+		CGRect toolbarRect = viewRect; toolbarRect.size.height = TOOLBAR_HEIGHT;
+		mainToolbar = [[ReaderMainToolbar alloc] initWithFrame:toolbarRect document:document]; // ReaderMainToolbar
+		mainToolbar.delegate = self; // ReaderMainToolbarDelegate
+		[self.view addSubview:mainToolbar];
+	}
 
-	CGRect pagebarRect = self.view.bounds; pagebarRect.size.height = PAGEBAR_HEIGHT;
-	pagebarRect.origin.y = (self.view.bounds.size.height - pagebarRect.size.height);
-	mainPagebar = [[ReaderMainPagebar alloc] initWithFrame:pagebarRect document:document]; // ReaderMainPagebar
-	mainPagebar.delegate = self; // ReaderMainPagebarDelegate
-	[self.view addSubview:mainPagebar];
+	if( !self.removeNavigation )
+	{
+		CGRect pagebarRect = self.view.bounds; pagebarRect.size.height = PAGEBAR_HEIGHT;
+		pagebarRect.origin.y = (self.view.bounds.size.height - pagebarRect.size.height);
+		mainPagebar = [[ReaderMainPagebar alloc] initWithFrame:pagebarRect document:document]; // ReaderMainPagebar
+		mainPagebar.delegate = self; // ReaderMainPagebarDelegate
+		[self.view addSubview:mainPagebar];
+	}
 
 	if (fakeStatusBar != nil) [self.view addSubview:fakeStatusBar]; // Add status bar background view
 
@@ -614,6 +641,8 @@
 
 			return;
 		}
+        
+		if( self.removeNavigation ) return;
 
 		CGRect nextPageRect = viewRect;
 		nextPageRect.size.width = TAP_AREA_SIZE;
@@ -665,7 +694,9 @@
 
 			return;
 		}
-
+        
+		if( self.removeNavigation ) return;
+		
 		CGRect nextPageRect = viewRect;
 		nextPageRect.size.width = TAP_AREA_SIZE;
 		nextPageRect.origin.x = (viewRect.size.width - TAP_AREA_SIZE);

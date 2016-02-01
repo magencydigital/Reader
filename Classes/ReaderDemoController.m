@@ -181,6 +181,9 @@
 	if (document != nil) // Must have a valid ReaderDocument object in order to proceed with things
 	{
 		ReaderViewController *readerViewController = [[ReaderViewController alloc] initWithReaderDocument:document];
+		readerViewController.removeNavigation = YES;
+		readerViewController.view.backgroundColor = [UIColor blackColor];
+        
 
 		readerViewController.delegate = self; // Set the ReaderViewController delegate to self
 
@@ -216,6 +219,11 @@
 	[self dismissViewControllerAnimated:YES completion:NULL];
 
 #endif // DEMO_VIEW_CONTROLLER_PUSH
+}
+
+- (void) readerViewController:(ReaderViewController *)viewController didChangePage:(NSInteger)page
+{
+	NSLog(@"readerViewController didChangePage : %d", page);
 }
 
 @end
