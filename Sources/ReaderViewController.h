@@ -34,13 +34,19 @@
 @optional // Delegate protocols
 
 - (void)dismissReaderViewController:(ReaderViewController *)viewController;
+- (void)readerViewController:(ReaderViewController *)viewController didChangePage:(NSInteger)page;
 
 @end
 
 @interface ReaderViewController : UIViewController
 
 @property (nonatomic, weak, readwrite) id <ReaderViewControllerDelegate> delegate;
+@property (nonatomic, assign) BOOL removeNavigation;
 
 - (instancetype)initWithReaderDocument:(ReaderDocument *)object;
+
+- (void)showDocumentPage:(NSInteger)page;
+- (void)closeDocument;
+- (ReaderDocument *)getDocument;
 
 @end
