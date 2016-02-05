@@ -243,6 +243,11 @@
 	return self;
 }
 
+- (void)fileName:(NSString *)fileName
+{
+	_fileName = fileName;
+}
+
 - (NSString *)fileName
 {
 	if (_fileName == nil) _fileName = [_filePath lastPathComponent];

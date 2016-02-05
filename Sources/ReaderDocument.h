@@ -52,4 +52,6 @@
 
 - (void)updateDocumentProperties;
 
+- (void)fileName:(NSString *)fileName;
+
 @end
