@@ -35,6 +35,11 @@
 
 	UIImage *markImageN;
 	UIImage *markImageY;
+	
+	CGFloat titleX;
+	CGFloat titleWidth;
+	CGFloat leftButtonX;
+	CGFloat rightButtonX;
 }
 
 #pragma mark - Constants
@@ -48,10 +53,12 @@
 #define BUTTON_FONT_SIZE 15.0f
 #define TEXT_BUTTON_PADDING 24.0f
 
-#define ICON_BUTTON_WIDTH 40.0f
+#define ICON_BUTTON_WIDTH 44.0f
 
 #define TITLE_FONT_SIZE 19.0f
 #define TITLE_HEIGHT 28.0f
+
+#define TITLE_TAG 97
 
 #pragma mark - Properties
 
@@ -83,14 +90,14 @@
 
 		const CGFloat buttonSpacing = BUTTON_SPACE; const CGFloat iconButtonWidth = ICON_BUTTON_WIDTH;
 
-		CGFloat titleX = BUTTON_X; CGFloat titleWidth = (viewWidth - (titleX + titleX));
+		titleX = BUTTON_X; titleWidth = (viewWidth - (titleX + titleX));
 
-		CGFloat leftButtonX = BUTTON_X; // Left-side button start X position
+		leftButtonX = BUTTON_X; // Left-side button start X position
 
 #if (READER_STANDALONE == FALSE) // Option
 
 		UIFont *doneButtonFont = [UIFont systemFontOfSize:BUTTON_FONT_SIZE];
-		NSString *doneButtonText = NSLocalizedString(@"Done", @"button");
+		NSString *doneButtonText = [ReaderConstants doneTranslation];
 		CGSize doneButtonSize = [doneButtonText sizeWithFont:doneButtonFont];
 		CGFloat doneButtonWidth = (doneButtonSize.width + TEXT_BUTTON_PADDING);
 
@@ -130,7 +137,7 @@
 
 #endif // end of READER_ENABLE_THUMBS Option
 
-		CGFloat rightButtonX = viewWidth; // Right-side buttons start X position
+		rightButtonX = viewWidth; // Right-side buttons start X position
 
 #if (READER_BOOKMARKS == TRUE) // Option
 
@@ -221,10 +228,8 @@
 
 		if (largeDevice == YES) // Show document filename in toolbar
 		{
-			CGRect titleRect = CGRectMake(titleX, BUTTON_Y, titleWidth, TITLE_HEIGHT);
-
-			UILabel *titleLabel = [[UILabel alloc] initWithFrame:titleRect];
-
+			UILabel *titleLabel = [[UILabel alloc] initWithFrame:[self _titleFrame]];
+			titleLabel.tag = TITLE_TAG;
 			titleLabel.textAlignment = NSTextAlignmentCenter;
 			titleLabel.font = [UIFont systemFontOfSize:TITLE_FONT_SIZE];
 			titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -244,6 +249,51 @@
 	}
 
 	return self;
+}
+
+- (CGRect)_titleFrame
+{
+	CGRect titleRect = CGRectMake(titleX, BUTTON_Y, titleWidth, TITLE_HEIGHT);
+	return titleRect;
+}
+
+- (void)addOptionalButtons:(NSArray *)options
+{
+	NSLog(@"HERE");
+	const CGFloat buttonSpacing = BUTTON_SPACE; const CGFloat iconButtonWidth = ICON_BUTTON_WIDTH;
+	for ( NSDictionary *opt in options) {
+
+		rightButtonX -= (iconButtonWidth + buttonSpacing); // Next position
+		
+		UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+		button.frame = CGRectMake(rightButtonX, BUTTON_Y, iconButtonWidth, BUTTON_HEIGHT);
+		[button setTitleColor:[UIColor colorWithWhite:0.0f alpha:1.0f] forState:UIControlStateNormal];
+		[button setTitleColor:[UIColor colorWithWhite:1.0f alpha:1.0f] forState:UIControlStateHighlighted];
+//		[button setImage:[UIImage imageNamed:@"Reader-Export"] forState:UIControlStateNormal];
+		[button addTarget:self action:@selector(optionalButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+		if( opt[@"tag"] && [opt[@"tag"] isKindOfClass:[NSNumber class]] )
+		{
+			button.tag = [opt[@"tag"] integerValue];
+		}
+		if( opt[@"image"] && [opt[@"image"] isKindOfClass:[UIImage class]] )
+		{
+			[button setImage:opt[@"image"] forState:UIControlStateNormal];
+		}
+		if( opt[@"title"] && [opt[@"title"] isKindOfClass:[NSString class]] )
+		{
+			[button setTitle:opt[@"title"] forState:UIControlStateNormal];
+		}
+//		[button setBackgroundImage:buttonH forState:UIControlStateHighlighted];
+//		[button setBackgroundImage:buttonN forState:UIControlStateNormal];
+		button.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+		//button.backgroundColor = [UIColor grayColor];
+		button.exclusiveTouch = YES;
+		
+		[self addSubview:button]; titleWidth -= (iconButtonWidth + buttonSpacing);
+	}
+	
+	UILabel *titleLabel = [self viewWithTag:TITLE_TAG];
+	titleLabel.frame = [self _titleFrame];
 }
 
 - (void)setBookmarkState:(BOOL)state
@@ -351,6 +401,11 @@
 - (void)markButtonTapped:(UIButton *)button
 {
 	[delegate tappedInToolbar:self markButton:button];
+}
+
+- (void)optionalButtonTapped:(UIButton *)button
+{
+	[delegate tappedInToolbar:self optionalButton:button];
 }
 
 @end

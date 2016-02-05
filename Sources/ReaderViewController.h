@@ -26,6 +26,8 @@
 #import <UIKit/UIKit.h>
 
 #import "ReaderDocument.h"
+#import "ReaderMainToolbar.h"
+#import "ReaderMainPagebar.h"
 
 @class ReaderViewController;
 
@@ -35,18 +37,28 @@
 
 - (void)dismissReaderViewController:(ReaderViewController *)viewController;
 - (void)readerViewController:(ReaderViewController *)viewController didChangePage:(NSInteger)page;
+- (void)willShowHUDReaderViewController:(ReaderViewController *)viewController;
+- (void)willHideHUDReaderViewController:(ReaderViewController *)viewController;
+- (void)readerViewController:(ReaderViewController *)viewController buttonTouchHandler:(UIButton *)button;
 
 @end
 
 @interface ReaderViewController : UIViewController
 
 @property (nonatomic, weak, readwrite) id <ReaderViewControllerDelegate> delegate;
-@property (nonatomic, assign) BOOL removeNavigation;
+//@property (nonatomic, assign) BOOL removeNavigation;
 
 - (instancetype)initWithReaderDocument:(ReaderDocument *)object;
 
 - (void)showDocumentPage:(NSInteger)page;
 - (void)closeDocument;
 - (ReaderDocument *)getDocument;
+- (ReaderMainToolbar *)getMainToolbar;
+- (ReaderMainPagebar *)getMainPagebar;
+- (void)removeNavigation:(BOOL)removed;
+- (BOOL)navigationIsRemoved;
+- (void)removeAndHideNavigation;
+- (void)showHUD;
+- (void)hideHUD;
 
 @end

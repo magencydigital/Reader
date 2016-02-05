@@ -40,6 +40,7 @@
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar printButton:(UIButton *)button;
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar emailButton:(UIButton *)button;
 - (void)tappedInToolbar:(ReaderMainToolbar *)toolbar markButton:(UIButton *)button;
+- (void)tappedInToolbar:(ReaderMainToolbar *)toolbar optionalButton:(UIButton *)button;
 
 @end
 
@@ -50,6 +51,7 @@
 - (instancetype)initWithFrame:(CGRect)frame document:(ReaderDocument *)document;
 
 - (void)setBookmarkState:(BOOL)state;
+- (void)addOptionalButtons:(NSArray *)options;
 
 - (void)hideToolbar;
 - (void)showToolbar;

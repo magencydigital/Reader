@@ -92,7 +92,7 @@
 
 	assert(delegate != nil); assert(document != nil);
 
-	self.view.backgroundColor = [UIColor grayColor]; // Neutral gray
+	self.view.backgroundColor = [UIColor blackColor];
 
 	CGRect scrollViewRect = self.view.bounds; UIView *fakeStatusBar = nil;
 
