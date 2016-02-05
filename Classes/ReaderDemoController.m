@@ -25,8 +25,11 @@
 
 #import "ReaderDemoController.h"
 #import "ReaderViewController.h"
+#import "ReaderConstants.h"
 
-@interface ReaderDemoController () <ReaderViewControllerDelegate>
+@interface ReaderDemoController () <ReaderViewControllerDelegate> {
+	NSMutableArray *_images;
+}
 
 @end
 
@@ -177,11 +180,43 @@
 	NSString *filePath = [pdfs firstObject]; assert(filePath != nil); // Path to first PDF file
 
 	ReaderDocument *document = [ReaderDocument withDocumentFilePath:filePath password:phrase];
+	
+	// Customize translation
+	[ReaderConstants setDoneTranslation:@"plop"];
+	[ReaderConstants setPageFormatTranslation:@"%d plip %d"];
 
 	if (document != nil) // Must have a valid ReaderDocument object in order to proceed with things
 	{
 		ReaderViewController *readerViewController = [[ReaderViewController alloc] initWithReaderDocument:document];
-		readerViewController.removeNavigation = YES;
+//		[readerViewController removeNavigation:YES];
+		
+		
+		// Try to add custom button in menu
+		_images = [NSMutableArray array];
+		UIImage *img = [UIImage imageNamed:@"Reader-Mark-N.png"];
+		UIImage *imgSelected = [UIImage imageNamed:@"Reader-Mark-Y.png"];
+		NSDictionary *info = @{ @"tag": @100, @"image": img, @"image_selected": imgSelected };
+		[_images addObject:info];
+		
+		info = @{ @"tag": @101, @"image": img, @"image_selected": imgSelected };
+		[_images addObject:info];
+		
+		info = @{ @"tag": @102, @"image": img, @"image_selected": imgSelected };
+		[_images addObject:info];
+		
+		info = @{ @"tag": @102, @"title": @"cool ok" };
+		[_images addObject:info];
+		
+		
+		
+		// Wait the ui view controller is pushed and loaded in navigation controller
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[[readerViewController getMainToolbar] addOptionalButtons:_images];
+			[readerViewController hideHUD];
+//			[readerViewController showHUD];
+//			[readerViewController performSelector:@selector(removeAndHideNavigation) withObject:nil afterDelay:2.5];
+//			[self performSelector:@selector(enableNavigation:) withObject:readerViewController afterDelay:5.];
+		});
 		readerViewController.view.backgroundColor = [UIColor blackColor];
         
 
@@ -206,6 +241,23 @@
 	}
 }
 
+- (void) enableNavigation:(ReaderViewController *)readerViewController
+{
+	NSLog(@"readerViewController.removeNavigation : %d", [readerViewController navigationIsRemoved]);
+	[readerViewController removeNavigation:NO];
+	NSLog(@"readerViewController.removeNavigation : %d", [readerViewController navigationIsRemoved]);
+}
+
+- (void)willShowHUDReaderViewController:(ReaderViewController *)viewController
+{
+	NSLog(@"willShowHUDReaderViewController");
+}
+
+- (void)willHideHUDReaderViewController:(ReaderViewController *)viewController
+{
+	NSLog(@"willHideHUDReaderViewController");
+}
+
 #pragma mark - ReaderViewControllerDelegate methods
 
 - (void)dismissReaderViewController:(ReaderViewController *)viewController
@@ -221,9 +273,14 @@
 #endif // DEMO_VIEW_CONTROLLER_PUSH
 }
 
-- (void) readerViewController:(ReaderViewController *)viewController didChangePage:(NSInteger)page
+- (void)readerViewController:(ReaderViewController *)viewController didChangePage:(NSInteger)page
 {
 	NSLog(@"readerViewController didChangePage : %d", page);
+}
+
+- (void)readerViewController:(ReaderViewController *)viewController buttonTouchHandler:(UIButton *)button
+{
+	NSLog(@"readerViewController buttonTouchHandler : %@", button);
 }
 
 @end

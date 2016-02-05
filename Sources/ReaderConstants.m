@@ -26,3 +26,53 @@
 #import "ReaderConstants.h"
 
 static NSString *const kReaderCopyrightNotice = @"Reader v2.x.y • Copyright © 2011-2016 Julius Oklamcak. All rights reserved.";
+
+@interface ReaderConstants() {
+	
+}
+
+@end
+
+@implementation ReaderConstants
+
+static ReaderConstants *sharedObject;
+
++ (instancetype) sharedInstance
+{
+	if( sharedObject == nil ) {
+		sharedObject = [[super allocWithZone:NULL] init];
+	}
+	return sharedObject;
+}
+
++ (NSString *) doneTranslation
+{
+	ReaderConstants *shared = [ReaderConstants sharedInstance];
+	if( !shared.doneTranslation ) {
+		shared.doneTranslation = NSLocalizedString(@"Done", @"button");
+	}
+	return shared.doneTranslation;
+}
+
++ (void) setDoneTranslation:(NSString *)doneTranslation
+{
+	ReaderConstants *shared = [ReaderConstants sharedInstance];
+	shared.doneTranslation = doneTranslation;
+}
+
++ (NSString *) pageFormatTranslation
+{
+	ReaderConstants *shared = [ReaderConstants sharedInstance];
+	if( !shared.pageFormatTranslation ) {
+		shared.pageFormatTranslation = NSLocalizedString(@"%i of %i", @"format"); // Format
+	}
+	return shared.pageFormatTranslation;
+}
+
++ (void) setPageFormatTranslation:(NSString *)pageFormatTranslation
+{
+	ReaderConstants *shared = [ReaderConstants sharedInstance];
+	shared.pageFormatTranslation = pageFormatTranslation;
+}
+
+@end

@@ -37,3 +37,17 @@
 #define READER_DISABLE_IDLE FALSE
 #define READER_STANDALONE FALSE
 #define READER_BOOKMARKS TRUE
+
+@interface ReaderConstants : NSObject
+
+@property (nonatomic, strong) NSString *doneTranslation;
+@property (nonatomic, strong) NSString *pageFormatTranslation;
+
++ (instancetype) sharedInstance;
+
++ (NSString *) doneTranslation;
++ (void) setDoneTranslation:(NSString *)doneTranslation;
++ (NSString *) pageFormatTranslation;
++ (void) setPageFormatTranslation:(NSString *)pageFormatTranslation;
+
+@end

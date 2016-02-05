@@ -26,8 +26,6 @@
 #import "ReaderConstants.h"
 #import "ReaderViewController.h"
 #import "ThumbsViewController.h"
-#import "ReaderMainToolbar.h"
-#import "ReaderMainPagebar.h"
 #import "ReaderContentView.h"
 #import "ReaderThumbCache.h"
 #import "ReaderThumbQueue.h"
@@ -65,6 +63,8 @@
 	NSDate *lastHideTime;
 
 	BOOL ignoreDidScroll;
+	
+	BOOL _removeNavigation;
 }
 
 #pragma mark - Constants
@@ -301,6 +301,64 @@
     return document;
 }
 
+- (ReaderMainToolbar *)getMainToolbar
+{
+	return mainToolbar;
+}
+
+- (ReaderMainPagebar *)getMainPagebar
+{
+	return mainPagebar;
+}
+
+- (void)removeNavigation:(BOOL)removed
+{
+	if( _removeNavigation == removed ) return;
+	
+	_removeNavigation = removed;
+	theScrollView.scrollEnabled = ![self navigationIsRemoved];
+}
+
+- (BOOL)navigationIsRemoved
+{
+	return _removeNavigation;
+}
+
+- (void)removeAndHideNavigation
+{
+	_removeNavigation = YES;
+	
+	// hide menu
+	if ((mainToolbar.alpha > 0.0f) || (mainPagebar.alpha > 0.0f))
+	{
+		[self hideHUD];
+	}
+}
+
+- (void)showHUD
+{
+	if( ![self navigationIsRemoved] )
+	{
+		[mainToolbar showToolbar]; [mainPagebar showPagebar]; // Show
+	}
+	if( self.delegate && [self.delegate respondsToSelector:@selector(willShowHUDReaderViewController:)] )
+	{
+		[self.delegate willShowHUDReaderViewController:self];
+	}
+}
+
+- (void)hideHUD
+{
+	[mainToolbar hideToolbar]; [mainPagebar hidePagebar]; // Hide
+	
+	lastHideTime = [NSDate date]; // Set last hide time
+	
+	if( self.delegate && [self.delegate respondsToSelector:@selector(willHideHUDReaderViewController:)] )
+	{
+		[self.delegate willHideHUDReaderViewController:self];
+	}
+}
+
 #pragma mark - UIViewController methods
 
 - (instancetype)initWithReaderDocument:(ReaderDocument *)object
@@ -343,7 +401,7 @@
 
 	assert(document != nil); // Must have a valid ReaderDocument
 
-	self.view.backgroundColor = [UIColor grayColor]; // Neutral gray
+	self.view.backgroundColor = [UIColor blackColor];
 
 	UIView *fakeStatusBar = nil; CGRect viewRect = self.view.bounds; // View bounds
 
@@ -370,27 +428,21 @@
 	theScrollView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
 	theScrollView.backgroundColor = [UIColor clearColor]; theScrollView.delegate = self;
 	[self.view addSubview:theScrollView];
-	if( self.removeNavigation )
+	if( [self navigationIsRemoved] )
 	{
 		theScrollView.scrollEnabled = NO;
 	}
 
-	if( !self.removeNavigation )
-	{
-		CGRect toolbarRect = viewRect; toolbarRect.size.height = TOOLBAR_HEIGHT;
-		mainToolbar = [[ReaderMainToolbar alloc] initWithFrame:toolbarRect document:document]; // ReaderMainToolbar
-		mainToolbar.delegate = self; // ReaderMainToolbarDelegate
-		[self.view addSubview:mainToolbar];
-	}
-
-	if( !self.removeNavigation )
-	{
-		CGRect pagebarRect = self.view.bounds; pagebarRect.size.height = PAGEBAR_HEIGHT;
-		pagebarRect.origin.y = (self.view.bounds.size.height - pagebarRect.size.height);
-		mainPagebar = [[ReaderMainPagebar alloc] initWithFrame:pagebarRect document:document]; // ReaderMainPagebar
-		mainPagebar.delegate = self; // ReaderMainPagebarDelegate
-		[self.view addSubview:mainPagebar];
-	}
+	CGRect toolbarRect = viewRect; toolbarRect.size.height = TOOLBAR_HEIGHT;
+	mainToolbar = [[ReaderMainToolbar alloc] initWithFrame:toolbarRect document:document]; // ReaderMainToolbar
+	mainToolbar.delegate = self; // ReaderMainToolbarDelegate
+	[self.view addSubview:mainToolbar];
+	
+	CGRect pagebarRect = self.view.bounds; pagebarRect.size.height = PAGEBAR_HEIGHT;
+	pagebarRect.origin.y = (self.view.bounds.size.height - pagebarRect.size.height);
+	mainPagebar = [[ReaderMainPagebar alloc] initWithFrame:pagebarRect document:document]; // ReaderMainPagebar
+	mainPagebar.delegate = self; // ReaderMainPagebarDelegate
+	[self.view addSubview:mainPagebar];
 
 	if (fakeStatusBar != nil) [self.view addSubview:fakeStatusBar]; // Add status bar background view
 
@@ -634,7 +686,7 @@
 				{
 					if ((mainToolbar.alpha < 1.0f) || (mainPagebar.alpha < 1.0f)) // Hidden
 					{
-						[mainToolbar showToolbar]; [mainPagebar showPagebar]; // Show
+						[self showHUD];
 					}
 				}
 			}
@@ -642,7 +694,7 @@
 			return;
 		}
         
-		if( self.removeNavigation ) return;
+		if( [self navigationIsRemoved] ) return;
 
 		CGRect nextPageRect = viewRect;
 		nextPageRect.size.width = TAP_AREA_SIZE;
@@ -695,7 +747,7 @@
 			return;
 		}
         
-		if( self.removeNavigation ) return;
+		if( [self navigationIsRemoved] ) return;
 		
 		CGRect nextPageRect = viewRect;
 		nextPageRect.size.width = TAP_AREA_SIZE;
@@ -733,9 +785,7 @@
 			if (CGRectContainsPoint(areaRect, point) == false) return;
 		}
 
-		[mainToolbar hideToolbar]; [mainPagebar hidePagebar]; // Hide
-
-		lastHideTime = [NSDate date]; // Set last hide time
+		[self hideHUD];
 	}
 }
 
@@ -874,6 +924,14 @@
 	}
 
 #endif // end of READER_BOOKMARKS Option
+}
+
+- (void)tappedInToolbar:(ReaderMainToolbar *)toolbar optionalButton:(UIButton *)button
+{
+	if( self.delegate && [self.delegate respondsToSelector:@selector(readerViewController:buttonTouchHandler:)] )
+	{
+		[self.delegate readerViewController:self buttonTouchHandler:button];
+	}
 }
 
 #pragma mark - MFMailComposeViewControllerDelegate methods
