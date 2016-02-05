@@ -187,6 +187,7 @@
 
 	if (document != nil) // Must have a valid ReaderDocument object in order to proceed with things
 	{
+		[document fileName:@"My Super custom Name"];
 		ReaderViewController *readerViewController = [[ReaderViewController alloc] initWithReaderDocument:document];
 //		[readerViewController removeNavigation:YES];
 		
