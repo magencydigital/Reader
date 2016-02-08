@@ -326,7 +326,7 @@
 
 - (void)removeAndHideNavigation
 {
-	_removeNavigation = YES;
+	[self removeNavigation:YES];
 	
 	// hide menu
 	if ((mainToolbar.alpha > 0.0f) || (mainPagebar.alpha > 0.0f))
