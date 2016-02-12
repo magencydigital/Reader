@@ -35,14 +35,18 @@ static NSString *const kReaderCopyrightNotice = @"Reader v2.x.y • Copyright ©
 
 @implementation ReaderConstants
 
-static ReaderConstants *sharedObject;
-
 + (instancetype) sharedInstance
 {
+    static ReaderConstants *sharedObject;
 	if( sharedObject == nil ) {
 		sharedObject = [[super allocWithZone:NULL] init];
 	}
 	return sharedObject;
+}
+
++ (id) allocWithZone:(struct _NSZone *)zone
+{
+    return [self sharedInstance];
 }
 
 + (NSString *) doneTranslation
